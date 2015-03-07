@@ -5,7 +5,9 @@ import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationServices;
@@ -17,11 +19,11 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.parse.FindCallback;
 import com.parse.ParseException;
 import com.parse.ParseGeoPoint;
-import com.parse.ParseObject;
 import com.parse.ParseQuery;
 import com.parse.ParseUser;
 import com.parse.ui.ParseLoginBuilder;
 
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -81,6 +83,11 @@ public class MainActivity extends ActionBarActivity implements GoogleApiClient.C
         }
     }
 
+    @Override
+    public void onConnectionSuspended(int i) {
+
+    }
+
     private void pinMap(GoogleMap map) {
         LatLng location =
                 new LatLng(mLastLocation.getLatitude(), mLastLocation.getLongitude());
@@ -103,24 +110,34 @@ public class MainActivity extends ActionBarActivity implements GoogleApiClient.C
     private void getNearbyUsers() {
         ParseUser currentUser = ParseUser.getCurrentUser();
         if (currentUser != null) {
+            ArrayList<String> userList = new ArrayList<String>();
+            final ArrayAdapter<String> listAdapter = new ArrayAdapter<String>(getApplicationContext(), R.layout.user_list_item, userList);
+            final ListView userListView = (ListView) findViewById(R.id.user_list);
+            userListView.setAdapter(listAdapter);
+
             ParseGeoPoint point =
                     new ParseGeoPoint(mLastLocation.getLatitude(), mLastLocation.getLongitude());
-            ParseQuery<ParseObject> query = ParseQuery.getQuery("User");
+            ParseQuery<ParseUser> query = ParseUser.getQuery();
+            query.whereNotEqualTo("username", currentUser.get("username"));
             query.whereNear("lastLocation", point);
-            query.setLimit(10);
-            query.findInBackground(new FindCallback<ParseObject>() {
+            query.findInBackground(new FindCallback<ParseUser>() {
 
                 @Override
-                public void done(List<ParseObject> parseObjects, ParseException e) {
-                    ListView listView = (ListView) findViewById(R.id.user_list);
-                    listView.
+                public void done(List<ParseUser> parseObjects, ParseException e) {
+                    if (e == null) {
+                        for (int i = 0; i < parseObjects.size(); i++) {
+                            Toast.makeText(getApplicationContext(), parseObjects.get(i).getString("username").toString(), Toast.LENGTH_LONG).show();
+                            ParseUser u = (ParseUser)parseObjects.get(i);
+                            String name = u.getString("username").toString();
+
+                            String email = u.getString("email").toString();
+                            listAdapter.add(name);
+
+                            listAdapter.add(email);
+                        }
+                    }
                 }
-            }
-        });
-    }
-
-    @Override
-    public void onConnectionSuspended(int i) {
-
+            });
+        }
     }
 }
