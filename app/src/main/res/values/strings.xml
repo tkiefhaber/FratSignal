@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name">FratSignal</string>
+
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Settings</string>
+    <string name="parse_app_id">lDV4myUCewqc8fAyH7BLWH0sXwqeDBQmlZqzsKU6</string>
+    <string name="parse_client_key">Y5YE16AhnfJy0GJh7RxVD3oCbbT9jGycpfFQOF4j</string>
+    <string name="twitter_key">HIT6AOsfIShi0mk8WHlNYOllb</string>
+    <string name="twitter_secret">Opd4vQWEh1qMnl89IDlsCVXHPerGHh3bBgl1avmfMLMcfin4UV</string>
+    <string name="facebook_app_id">371126596404456</string>
+    <string name="dummy_user_name">rustychicken</string>
+</resources>
