@@ -7,4 +7,8 @@
         <item name="android:textColor">@color/primary_text</item>
     </style>
 
+    <style name="TwoWayView">
+        <item name="android:orientation">horizontal</item>
+    </style>
+
 </resources>

@@ -7,7 +7,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
-import android.widget.Toast;
 
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationServices;
@@ -15,6 +14,7 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.parse.FindCallback;
 import com.parse.ParseException;
@@ -31,6 +31,7 @@ public class MainActivity extends ActionBarActivity implements GoogleApiClient.C
 
     GoogleApiClient mGoogleApiClient;
     Location mLastLocation;
+    List<ParseUser> mNearbyUsers;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -79,7 +80,7 @@ public class MainActivity extends ActionBarActivity implements GoogleApiClient.C
         if (mLastLocation != null) {
             pinMap(map);
             saveCurrentLocation();
-            getNearbyUsers();
+            getNearbyUsers(map);
         }
     }
 
@@ -97,6 +98,22 @@ public class MainActivity extends ActionBarActivity implements GoogleApiClient.C
                 .position(location));
     }
 
+    private void pinNearbyUsers(GoogleMap map) {
+        if (mNearbyUsers.size() > 0) {
+            LatLngBounds.Builder boundaries = new LatLngBounds.Builder();
+
+            for (int i = 0; i < mNearbyUsers.size(); i++) {
+                ParseUser u = mNearbyUsers.get(i);
+                ParseGeoPoint lastLocation = (ParseGeoPoint) u.get("lastLocation");
+                LatLng location = new LatLng(lastLocation.getLatitude(), lastLocation.getLongitude());
+                boundaries.include(location);
+
+                map.addMarker(new MarkerOptions().position(location));
+            }
+            map.moveCamera(CameraUpdateFactory.newLatLngBounds(boundaries.build(), 100));
+        }
+    }
+
     private void saveCurrentLocation() {
         ParseUser currentUser = ParseUser.getCurrentUser();
         if (currentUser != null) {
@@ -107,11 +124,11 @@ public class MainActivity extends ActionBarActivity implements GoogleApiClient.C
         }
     }
 
-    private void getNearbyUsers() {
+    private void getNearbyUsers(final GoogleMap map) {
         ParseUser currentUser = ParseUser.getCurrentUser();
         if (currentUser != null) {
-            ArrayList<String> userList = new ArrayList<String>();
-            final ArrayAdapter<String> listAdapter = new ArrayAdapter<String>(getApplicationContext(), R.layout.user_list_item, userList);
+            ArrayList<String> userList = new ArrayList<>();
+            final ArrayAdapter<String> listAdapter = new ArrayAdapter<>(getApplicationContext(), R.layout.user_list_item, userList);
             final ListView userListView = (ListView) findViewById(R.id.user_list);
             userListView.setAdapter(listAdapter);
 
@@ -125,16 +142,12 @@ public class MainActivity extends ActionBarActivity implements GoogleApiClient.C
                 @Override
                 public void done(List<ParseUser> parseObjects, ParseException e) {
                     if (e == null) {
+                        mNearbyUsers = parseObjects;
                         for (int i = 0; i < parseObjects.size(); i++) {
-                            Toast.makeText(getApplicationContext(), parseObjects.get(i).getString("username").toString(), Toast.LENGTH_LONG).show();
-                            ParseUser u = (ParseUser)parseObjects.get(i);
-                            String name = u.getString("username").toString();
-
-                            String email = u.getString("email").toString();
-                            listAdapter.add(name);
-
-                            listAdapter.add(email);
+                            ParseUser u = parseObjects.get(i);
+                            listAdapter.add(u.getString("name"));
                         }
+                        pinNearbyUsers(map);
                     }
                 }
             });
