@@ -1,5 +1,6 @@
 package tv.rustychicken.fratsignal;
 
+import android.content.Intent;
 import android.location.Location;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
@@ -42,6 +43,10 @@ public class MainActivity extends ActionBarActivity implements GoogleApiClient.C
             startActivityForResult(builder.build(), 0);
         }
         buildGoogleApiClient();
+        final Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+        final Intent serviceIntent = new Intent(getApplicationContext(), MessageService.class);
+        startService(serviceIntent);
+        startActivity(intent);
     }
 
 
