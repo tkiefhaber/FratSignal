@@ -101,6 +101,9 @@ public class MainActivity extends ActionBarActivity implements GoogleApiClient.C
     private void pinNearbyUsers(GoogleMap map) {
         if (mNearbyUsers.size() > 0) {
             LatLngBounds.Builder boundaries = new LatLngBounds.Builder();
+            ParseGeoPoint currentUserPoint = (ParseGeoPoint) ParseUser.getCurrentUser().get("lastLocation");
+            LatLng currentUserLatLng = new LatLng(currentUserPoint.getLatitude(), currentUserPoint.getLongitude());
+            boundaries.include(currentUserLatLng);
 
             for (int i = 0; i < mNearbyUsers.size(); i++) {
                 ParseUser u = mNearbyUsers.get(i);
