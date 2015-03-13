@@ -9,4 +9,5 @@
     <string name="twitter_secret">Opd4vQWEh1qMnl89IDlsCVXHPerGHh3bBgl1avmfMLMcfin4UV</string>
     <string name="facebook_app_id">371126596404456</string>
     <string name="dummy_user_name">rustychicken</string>
+    <string name="message_elipses">...</string>
 </resources>

@@ -17,7 +17,11 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
+        <activity android:name=".ChatActivity"
+                  android:label="FratSignal"
+                  android:theme="@style/AppTheme">
+        </activity>
+        <service android:name=".MessageService"></service>
         <activity
             android:name="com.parse.ui.ParseLoginActivity"
             android:label="@string/app_name"
