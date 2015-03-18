@@ -9,6 +9,7 @@ import android.location.Location;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.ActionBarActivity;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -47,12 +48,12 @@ public class MainActivity extends ActionBarActivity implements GoogleApiClient.C
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        showSpinner();
         if (ParseUser.getCurrentUser() == null) {
             ParseLoginBuilder builder = new ParseLoginBuilder(MainActivity.this);
             startActivityForResult(builder.build(), 0);
+        } else {
+            buildGoogleApiClient();
         }
-        buildGoogleApiClient();
     }
 
 
@@ -85,6 +86,7 @@ public class MainActivity extends ActionBarActivity implements GoogleApiClient.C
 
     @Override
     public void onConnected(Bundle bundle) {
+        showSpinner();
         MapFragment mapFragment = (MapFragment) getFragmentManager().findFragmentById(R.id.map);
         mMap = mapFragment.getMap();
         mLastLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
@@ -194,7 +196,6 @@ public class MainActivity extends ActionBarActivity implements GoogleApiClient.C
         });
     }
 
-    //show a loading spinner while the sinch client starts
     private void showSpinner() {
         final ProgressDialog progressDialog = new ProgressDialog(this);
         progressDialog.setTitle("Loading");
@@ -204,6 +205,7 @@ public class MainActivity extends ActionBarActivity implements GoogleApiClient.C
         BroadcastReceiver receiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
+                Log.d("MainActivity", "dismissingDialog");
                 Boolean success = intent.getBooleanExtra("success", false);
                 progressDialog.dismiss();
                 if (!success) {
@@ -212,7 +214,7 @@ public class MainActivity extends ActionBarActivity implements GoogleApiClient.C
             }
         };
 
-        LocalBroadcastManager.getInstance(this).registerReceiver(receiver, new IntentFilter("tv.rustychicken.fratsignal.MAIN"));
+        LocalBroadcastManager.getInstance(this).registerReceiver(receiver, new IntentFilter("tv.rustychicken.fratsignal.MainActivity"));
     }
 
     @Override

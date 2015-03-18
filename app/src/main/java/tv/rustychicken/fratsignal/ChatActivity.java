@@ -6,7 +6,8 @@ import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.support.v7.app.ActionBarActivity;
-import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ListView;
@@ -65,6 +66,25 @@ public class ChatActivity extends ActionBarActivity {
         });
     }
 
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_main, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+
+        if (id == R.id.logout) {
+            ParseUser.logOut();
+            finish();
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
     //get previous messages from parse & display
     private void populateMessageHistory() {
         String[] userIds = {currentUserId, recipientId};
@@ -95,6 +115,7 @@ public class ChatActivity extends ActionBarActivity {
             Toast.makeText(this, "Please enter a message", Toast.LENGTH_LONG).show();
             return;
         }
+        Toast.makeText(this, recipientId, Toast.LENGTH_LONG).show();
         messageService.sendMessage(recipientId, messageBody);
         messageBodyField.setText("");
     }
@@ -123,8 +144,8 @@ public class ChatActivity extends ActionBarActivity {
         @Override
         public void onMessageFailed(MessageClient client, Message message,
                                     MessageFailureInfo failureInfo) {
-            Log.d("message failure", failureInfo.getSinchError().getMessage());
-            Toast.makeText(ChatActivity.this, "Message failed to send.", Toast.LENGTH_LONG).show();
+
+            Toast.makeText(ChatActivity.this, "Message failed to send." + failureInfo.getSinchError().getMessage(), Toast.LENGTH_LONG).show();
         }
 
         @Override
@@ -146,7 +167,6 @@ public class ChatActivity extends ActionBarActivity {
             query.findInBackground(new FindCallback<ParseObject>() {
                 @Override
                 public void done(List<ParseObject> messageList, com.parse.ParseException e) {
-                    Log.d("message sent", e.getMessage().toString());
                     if (e == null) {
                         if (messageList.size() == 0) {
                             ParseObject parseMessage = new ParseObject("ParseMessage");

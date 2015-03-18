@@ -25,7 +25,7 @@ public class MessageService extends Service implements SinchClientListener {
     private MessageClient messageClient = null;
     private String currentUserId;
     private LocalBroadcastManager broadcaster;
-    private Intent broadcastIntent = new Intent("tv.rustychicken.fratsignal.app.MainActivity");
+    private Intent broadcastIntent = new Intent("tv.rustychicken.fratsignal.MainActivity");
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
