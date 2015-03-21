@@ -10,7 +10,7 @@
     <string name="message_elipses">…</string>
     <string name="title_facebook_login">facebook login</string>
     <string-array name="my_facebook_permissions">
-        <item>public profile</item>
+        <item>public_profile</item>
         <item>user_friends</item>
     </string-array>
 </resources>
