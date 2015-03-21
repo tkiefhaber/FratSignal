@@ -1,12 +1,22 @@
 package tv.rustychicken.fratsignal;
 
+import android.app.ProgressDialog;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.location.Location;
 import android.os.Bundle;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.ActionBarActivity;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationServices;
@@ -32,6 +42,7 @@ public class MainActivity extends ActionBarActivity implements GoogleApiClient.C
     GoogleApiClient mGoogleApiClient;
     Location mLastLocation;
     List<ParseUser> mNearbyUsers;
+    GoogleMap mMap;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,10 +51,10 @@ public class MainActivity extends ActionBarActivity implements GoogleApiClient.C
         if (ParseUser.getCurrentUser() == null) {
             ParseLoginBuilder builder = new ParseLoginBuilder(MainActivity.this);
             startActivityForResult(builder.build(), 0);
+        } else {
+            buildGoogleApiClient();
         }
-        buildGoogleApiClient();
     }
-
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -74,13 +85,14 @@ public class MainActivity extends ActionBarActivity implements GoogleApiClient.C
 
     @Override
     public void onConnected(Bundle bundle) {
+        showSpinner();
         MapFragment mapFragment = (MapFragment) getFragmentManager().findFragmentById(R.id.map);
-        GoogleMap map = mapFragment.getMap();
+        mMap = mapFragment.getMap();
         mLastLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
         if (mLastLocation != null) {
-            pinMap(map);
+            pinMap(mMap);
             saveCurrentLocation();
-            getNearbyUsers(map);
+            getNearbyUsers(mMap);
         }
     }
 
@@ -130,10 +142,16 @@ public class MainActivity extends ActionBarActivity implements GoogleApiClient.C
     private void getNearbyUsers(final GoogleMap map) {
         ParseUser currentUser = ParseUser.getCurrentUser();
         if (currentUser != null) {
-            ArrayList<String> userList = new ArrayList<>();
+            final ArrayList<String> userList = new ArrayList<>();
             final ArrayAdapter<String> listAdapter = new ArrayAdapter<>(getApplicationContext(), R.layout.user_list_item, userList);
             final ListView userListView = (ListView) findViewById(R.id.user_list);
             userListView.setAdapter(listAdapter);
+            userListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                @Override
+                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                    openConversation(userList, position);
+                }
+            });
 
             ParseGeoPoint point =
                     new ParseGeoPoint(mLastLocation.getLatitude(), mLastLocation.getLongitude());
@@ -152,8 +170,54 @@ public class MainActivity extends ActionBarActivity implements GoogleApiClient.C
                         }
                         pinNearbyUsers(map);
                     }
+                    final Intent serviceIntent = new Intent(getApplicationContext(), MessageService.class);
+                    startService(serviceIntent);
                 }
             });
         }
+    }
+
+    public void openConversation(ArrayList<String> names, int pos) {
+        ParseQuery<ParseUser> query = ParseUser.getQuery();
+        query.whereEqualTo("name", names.get(pos));
+        query.findInBackground(new FindCallback<ParseUser>() {
+            public void done(List<ParseUser> user, com.parse.ParseException e) {
+                if (e == null) {
+                    Intent intent = new Intent(getApplicationContext(), ChatActivity.class);
+                    intent.putExtra("RECIPIENT_ID", user.get(0).getObjectId());
+                    startActivity(intent);
+                } else {
+                    Toast.makeText(getApplicationContext(),
+                            "Error finding that user",
+                            Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+    }
+
+    private void showSpinner() {
+        final ProgressDialog progressDialog = new ProgressDialog(this);
+        progressDialog.setTitle("Loading");
+        progressDialog.setMessage("Please wait...");
+        progressDialog.show();
+
+        BroadcastReceiver receiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                Log.d("MainActivity", "dismissingDialog");
+                Boolean success = intent.getBooleanExtra("success", false);
+                progressDialog.dismiss();
+                if (!success) {
+                    Toast.makeText(getApplicationContext(), "Messaging service failed to start", Toast.LENGTH_LONG).show();
+                }
+            }
+        };
+
+        LocalBroadcastManager.getInstance(this).registerReceiver(receiver, new IntentFilter("tv.rustychicken.fratsignal.MainActivity"));
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
     }
 }

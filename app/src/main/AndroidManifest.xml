@@ -17,7 +17,11 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
+        <activity android:name=".ChatActivity"
+                  android:label="FratSignal"
+                  android:theme="@style/AppTheme">
+        </activity>
+        <service android:name=".MessageService"></service>
         <activity
             android:name="com.parse.ui.ParseLoginActivity"
             android:label="@string/app_name"
@@ -25,15 +29,22 @@
             <meta-data
                 android:name="com.parse.ui.ParseLoginActivity.PARSE_LOGIN_ENABLED"
                 android:value="true" />
-            <!--<meta-data-->
-                <!--android:name="com.parse.ui.ParseLoginActivity.FACEBOOK_LOGIN_ENABLED"-->
-                <!--android:value="true" />-->
-            <!--<meta-data-->
-                <!--android:name="com.parse.ui.ParseLoginActivity.TWITTER_LOGIN_ENABLED"-->
-                <!--android:value="true" />-->
+            <meta-data
+                android:name="com.parse.ui.ParseLoginActivity.FACEBOOK_LOGIN_ENABLED"
+                android:value="true" />
+            <meta-data
+                android:name="com.parse.ui.ParseLoginActivity.TWITTER_LOGIN_ENABLED"
+                android:value="true" />
             <meta-data
                 android:name="com.parse.ui.ParseLoginActivity.APP_LOGO"
-                android:value="@drawable/fratsignal" />
+                android:resource="@drawable/fratsignal" />
+            <meta-data
+                android:name="com.parse.ui.ParseLoginActivity.FACEBOOK_LOGIN_PERMISSIONS"
+                android:resource="@array/my_facebook_permissions"/>
+        </activity>
+        <activity
+            android:name="com.facebook.LoginActivity"
+            android:label="@string/title_facebook_login" >
         </activity>
         <meta-data
             android:name="com.google.android.gms.version"
@@ -47,6 +58,7 @@
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
     <uses-feature
         android:glEsVersion="0x00020000"
         android:required="true"/>
