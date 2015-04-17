@@ -37,7 +37,7 @@
                 android:value="true" />
             <meta-data
                 android:name="com.parse.ui.ParseLoginActivity.APP_LOGO"
-                android:resource="@drawable/fratsignal" />
+                android:resource="@drawable/fratsignal_logo_small" />
             <meta-data
                 android:name="com.parse.ui.ParseLoginActivity.FACEBOOK_LOGIN_PERMISSIONS"
                 android:resource="@array/my_facebook_permissions"/>
