@@ -27,8 +27,10 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.parse.FindCallback;
+import com.parse.GetCallback;
 import com.parse.ParseException;
 import com.parse.ParseGeoPoint;
+import com.parse.ParseObject;
 import com.parse.ParseQuery;
 import com.parse.ParseUser;
 import com.parse.ui.ParseLoginBuilder;
@@ -48,11 +50,12 @@ public class MainActivity extends ActionBarActivity implements GoogleApiClient.C
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        if (ParseUser.getCurrentUser() == null) {
+        ParseUser currentUser = ParseUser.getCurrentUser();
+        if (currentUser == null) {
             ParseLoginBuilder builder = new ParseLoginBuilder(MainActivity.this);
             startActivityForResult(builder.build(), 0);
         } else {
-            buildGoogleApiClient();
+            checkAllegiances(currentUser);
         }
     }
 
@@ -175,6 +178,40 @@ public class MainActivity extends ActionBarActivity implements GoogleApiClient.C
                 }
             });
         }
+    }
+
+    private void checkAllegiances(final ParseUser currentUser) {
+        ParseQuery<ParseObject> query = ParseQuery.getQuery("Allegiance");
+        query.whereEqualTo("userId", currentUser.getObjectId());
+        query.findInBackground(new FindCallback<ParseObject>() {
+            public void done(List<ParseObject> allegiances, ParseException e) {
+                if (e == null) {
+                    if (allegiances.isEmpty()) {
+                        Toast.makeText(getApplicationContext(), "no allegiances", Toast.LENGTH_SHORT).show();
+                        /* eventually set up allegiances activity but for now do nothing*/
+                        buildGoogleApiClient();
+                    } else {
+                        /* temporarily show the first team name in a toast */
+                        showAllegiance(allegiances);
+                    }
+                }
+            }
+        });
+    }
+
+    private void showAllegiance(final List<ParseObject> allegiances) {
+        ParseObject allegiance = ((ParseObject) allegiances.toArray()[0]);
+
+        ParseQuery<ParseObject> query = ParseQuery.getQuery("Team");
+        query.whereEqualTo("objectId", allegiance.get("teamId"));
+        query.getFirstInBackground(new GetCallback<ParseObject>() {
+            public void done(ParseObject team, ParseException e) {
+                if (e == null) {
+                    Toast.makeText(getApplicationContext(), team.getString("name"), Toast.LENGTH_LONG).show();
+                    buildGoogleApiClient();
+                }
+            }
+        });
     }
 
     public void openConversation(ArrayList<String> names, int pos) {

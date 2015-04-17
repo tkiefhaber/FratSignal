@@ -115,7 +115,6 @@ public class ChatActivity extends ActionBarActivity {
             Toast.makeText(this, "Please enter a message", Toast.LENGTH_LONG).show();
             return;
         }
-        Toast.makeText(this, recipientId, Toast.LENGTH_LONG).show();
         messageService.sendMessage(recipientId, messageBody);
         messageBodyField.setText("");
     }
