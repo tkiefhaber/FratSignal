@@ -187,9 +187,24 @@ public class MainActivity extends ActionBarActivity implements GoogleApiClient.C
             public void done(List<ParseObject> allegiances, ParseException e) {
                 if (e == null) {
                     if (allegiances.isEmpty()) {
-                        Toast.makeText(getApplicationContext(), "no allegiances", Toast.LENGTH_SHORT).show();
-                        /* eventually set up allegiances activity but for now do nothing*/
-                        buildGoogleApiClient();
+                        ParseQuery<ParseObject> bengals = ParseQuery.getQuery("Team");
+                        bengals.whereEqualTo("name", "Bengals");
+                        bengals.getFirstInBackground(new GetCallback<ParseObject>(){
+                            @Override
+                            public void done(ParseObject bengals, ParseException bengalsFindError) {
+                                if (bengalsFindError == null) {
+                                    Toast.makeText(getApplicationContext(), bengals.getString("name"), Toast.LENGTH_LONG);
+                                    ParseObject allegiance = new ParseObject("Allegiance");
+                                    allegiance.put("userId", currentUser.getObjectId());
+                                    allegiance.put("teamId", bengals.getObjectId());
+                                    allegiance.saveInBackground();
+                                    Toast.makeText(getApplicationContext(), "added the bungholes", Toast.LENGTH_SHORT).show();
+                                    /* eventually set up allegiances activity but for now do nothing*/
+                                    buildGoogleApiClient();
+                                }
+                            }
+
+                        });
                     } else {
                         /* temporarily show the first team name in a toast */
                         showAllegiance(allegiances);
